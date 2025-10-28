@@ -1,0 +1,297 @@
+---
+title: "Covid-19 Pandemic in Slovakia"
+author: "AS2021506 - I.A.A.Wathsala"
+output: html_document
+---
+
+
+
+## **1. Introduction of Slovakia**
+
+
+Slovakia is a nation in Central Europe that is landlocked. Hungary to the south, Austria to the west, Poland to the north, Ukraine to the east, and the Czech Republic to the northwest are its borders.Slovakia has a population of more than 5.4 million people living within its 49,000 square kilometres of primarily mountainous area. Bratislava is the capital and largest city; Košice is the second largest.In Slovakia, a small number of cities and towns make up the slightly over half of the population that lives in or near large urban centers. With 583,600 residents, Bratislava is both the capital and largest city. Bratislava is situated on the borders of Hungary and Austria on the Danube River. Bratislava is not only Slovakia's capital but also its hub for tourism and culture. 
+
+
+## **2. Exploratory data analysis**
+
+The necessary data set was obtained from the “coronavirus” package in R.This includes information about top 201 countries that have been affected from Covid-19. Data includes details from 2020-01-22 to 2023-03-09. The description of data is as follows :
+
+* date - Date of data collectoin
+* province - Specific province of the country
+* country - Name of the country
+* lat - Latitude of the country
+* long - Longitude of the country
+* type - Type of the case reported(confirmed, recovered, death)
+* cases - Number of cases reported
+
+Slovakia has been selected for the analysis.
+
+### **2.1 Visualization of cases**
+
+Three types of cases were considered as follows:
+
+* Confirmed
+* Recovered
+* Death
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+library(coronavirus)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(skimr)
+library(knitr)
+
+
+# view dataset
+data("coronavirus")
+view(coronavirus)
+
+# filter the slovakia dataset
+slovakia_df <-  coronavirus %>% filter(country == "Slovakia")
+view(slovakia_df)
+
+# filter the columns and set the negative cases as 0
+slovakia_corona <- slovakia_df %>% select(date, country, cases, type) %>% mutate(cases = replace(cases, which(cases < 0), 0)) 
+view(slovakia_corona)
+
+
+# Summarize data by type of case
+summary_cases <- slovakia_corona %>%
+  group_by(type) %>%
+  summarise(total_cases = sum(cases))
+
+# Plot the bar graph
+ggplot(summary_cases, aes(x = type, y = total_cases, fill = type)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total COVID-19 Cases in Slovakia by Type",
+       x = "Type of Case",
+       y = "Total Number of Cases") +
+  theme_minimal()
+```
+
+* The above bar graph shows the number of cases recorded in Slovakia from 2020 January 22 to 2023 March 09 according to the type of the cases.The number of death cases are lower than the recovery and confirmed cases.
+
+#### **2.1.1 Visualization of Confirmed cases**
+
+* The following graph displays the total number of COVID-19 cases over the time in Slovakia. COVID-19 were started from the beginning of 2021.There is a noticeable increase in confirmed cases in early 2022,exceeding 30,000 cases per day. There is a noticeable decline in the number of confirmed cases at the beginning of 2023.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+
+#filter the confirmed cases
+slovakia_confirmed <- slovakia_corona %>% filter(type == "confirmed") %>% select(date , cases , type)
+
+#plot for confirmed cases in slovakia
+
+ggplot(slovakia_confirmed, aes(x = date, y = cases)) +
+  geom_line(color = "green" , size=0.5) +
+  labs(title = "Figure 1 : Confirmed Cases in Slovakia",
+       x = "Date",
+       y = "Number of Confirmed Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+```
+
+* Table 1 shows the details of minimum, medium and maximum  cases of confirmed Covid cases in Slovakia. The mean column gives an idea about the number of confirmed cases related to one day.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+
+# summary of confirmed cases
+kable(summary(slovakia_confirmed) , caption = "Table 1 : summary of confirmed cases in Slovakia")
+
+```
+
+
+#### **2.1.2 Visualization of Recovery cases**
+
+* The following figure show the number of COVID-19 recovery cases in Slovakia from early 2020 to 2023.The highest peak occurred in early 2021 with recovery cases reaching nearly 5,000 per day.After this peak,there was a sharp decline, with the number of  recovery cases dropping to nearly zero.Then there was a huge effect of COVID-19 after the beginning of 2021.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+slovakia_recovery <- slovakia_corona %>% filter(type == "recovery") %>% select(date , cases , type)
+
+#plot for recovery cases in slovakia
+
+ggplot(slovakia_recovery, aes(x = date, y = cases)) +
+  geom_line(color = "orange" , size=0.5) +
+  labs(title = "Figure 2 : Recovery Cases in Slovakia",
+       x = "Date",
+       y = "Number of Recovery Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+```
+
+
+* According to the table 2,The majority of days had no or very few recovery cases reported,because of the median and 1st quartile values being 0.0.The maximum value is 4957.0. It indicates that there were significant peaks at certain points.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+# summary of recovery cases
+kable(summary(slovakia_recovery) , caption = "Table 2 : summary of recovery cases in Slovakia")
+
+```
+
+
+#### **2.1.3 Visualization of death cases**
+
+
+* The following figure show the number of COVID-19 death cases in Slovakia from early 2020 to 2023.There was a significant increase in death cases starting around late 2020, peaking in early 2021.The peak reached over 200 daily deaths.The deaths cases increased from the beginning of 2021 to end of 2022. 
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+slovakia_death <- slovakia_corona %>% filter(type == "death") %>% select(date , cases ,type)
+
+#plot for death cases in slovakia
+
+ggplot(slovakia_death, aes(x = date, y = cases)) +
+  geom_line(color = "blue" , size=0.5) +
+  labs(title = "Figure 3 : Death Cases in Slovakia",
+       x = "Date",
+       y = "Number of Death Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+```
+
+
+
+* According to the table 3, Median is 3.0.Then the majority of the days had relatively low numbers of deaths. there were significant peaks with a maximum of 204 deaths in a single day.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+# summary of death cases
+kable(summary(slovakia_death) , caption = "Table 3 : summary of death cases in Slovakia")
+
+```
+
+#### **2.1.4 Visualization of Active Cases**
+
+
+* The following chart shows the number of active COVID-19 cases in Slovakia from 2020 to 2023. Active cases are those individuals who are currently infected with COVID-19, excluding those who have recovered or died. The number of active cases rises sharply at the beginning of 2022.It reached around 2.5 million.This chart helps us understand the trend of ongoing COVID-19 infections in Slovakia over the given period.
+
+
+```{r, echo=FALSE , comment=NA,message=FALSE, warning=FALSE}
+
+active_cases <- slovakia_corona %>% select(date,cases,type) %>% mutate(cases = replace(cases, which(cases < 0), 0))  %>%  pivot_wider(names_from = type, values_from = cases)
+
+#Create active column and add acive values
+active_cases$active <- numeric(nrow(active_cases))
+
+active_cases$active[1] <- active_cases$confirmed[1] - active_cases$death[1] - active_cases$recovery[1]
+
+#go through loop from 2 to all the data
+for (i in 2:nrow(active_cases)) {
+  active_cases$active[i] <- active_cases$active[i-1] + active_cases$confirmed[i] - active_cases$death[i] - active_cases$recovery[i]
+}
+
+
+#plot for active cases in slovakia
+ggplot(active_cases, aes(x = date, y = active)) +
+  geom_line(color = "red") +
+  labs(title = "Figure 4 : Active COVID-19 Cases",
+       x = "Date",
+       y = "Number of active Cases") +
+  theme_minimal()+
+   scale_y_continuous(labels = scales::comma)
+
+
+```
+
+
+### **2.2 Comparison with other countries**
+
+
+* The global COVID-19 pandemic  has effected many countries in different ways. It depend on degrees of infection rates, healthcare responses, and overall impact on public health. To understand the differences , we have to compare the total number of cases in each type in different country.
+
+* Therefore, We selected three countries near the Slovakia to understand the differences.This study focuses on Austria, Czechia, and Romania, examining the total number of confirmed COVID-19 cases
+to identify the similarities and differences. According to the geographical proximity in Central and Eastern Europe, we selected the given neighbour countries for the study.
+
+
+
+```{r, echo=FALSE , comment=NA ,message=FALSE, warning=FALSE}
+
+# find the neighbour countries are in the dataset
+#austria <- "Austria" %in% coronavirus$country
+#austria
+
+#Czechia <- "Czechia" %in% coronavirus$country
+#Czechia
+
+#romania <- "Romania" %in% coronavirus$country
+#romania
+
+
+# filter neighbor countries and get pivoted table
+selected_countries <- filter(coronavirus, country %in% c("Slovakia","Austria","Czechia","Romania")) %>% mutate(cases = replace(cases, which(cases<0), 0)) %>% select(date,population,country,type,cases)%>% pivot_wider(names_from = type, values_from = cases)
+
+view(selected_countries)
+
+# create mean table for countries
+mean_table <- selected_countries %>% group_by(country) %>% summarise(population = mean(population), confirmed_mean = mean(confirmed),  ,death_mean = mean(death),  recovery_mean = mean(recovery), Total_confirmed = sum(confirmed),Total_death = sum(death),Total_recovered = sum(recovery))
+
+view(mean_table)
+```
+
+
+#### **2.2.1 Comparison of Confirmed cases**
+
+
+* According to the following chart , it effectively highlights Austria as having the most confirmed cases, followed by Czechia, Romania, and Slovakia, in that order.Austria has the highest total number of confirmed cases, reaching approximately 6 million. Slovakia has the lowest number of confirmed cases among other countries, with around 3 million.
+
+
+```{r, echo=FALSE , comment=NA ,message=FALSE, warning=FALSE}
+
+ggplot(mean_table, aes(x = country , y = Total_confirmed , fill = country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Confirmed Cases by Selected Countries",
+       x = "Country",
+       y = "Total Number of Confirmed Cases") +
+  theme_minimal()
+```
+
+
+#### **2.2.2 Comparison of Recovered cases**
+
+
+* According to the following chart, It highlights Czechia as having the most recovery cases, followed by Romania, Austria, and Slovakia, in that order.Slovakia has the lowest number of recovery cases among the four countries, with around 0.3 million.
+
+```{r, echo=FALSE , comment=NA,message=FALSE, warning=FALSE}
+
+ggplot(mean_table, aes(x = country , y = Total_recovered  , fill = country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Recovery Cases by Selected Countries",
+       x = "Country",
+       y = "Total Number of Recovery Cases") +
+  theme_minimal()
+```
+
+#### **2.2.3 Comparison of Death cases**
+
+* The following chart effectively highlights Romania as having the most death cases, followed by Czechia, Austria, and Slovakia, in that order.It is approximately 60,000.This indicates a higher death impact of COVID-19 in Romania compared to other three countries.Slovakia has the lowest number of death cases among the four countries, with around 15,000.
+
+
+```{r, echo=FALSE , comment=NA,message=FALSE, warning=FALSE}
+
+ggplot(mean_table, aes(x = country , y = Total_death  , fill = country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Death Cases by Selected Countries",
+       x = "Country",
+       y = "Total Number of Death Cases") +
+  theme_minimal()
+```
+
+
+
+## **3. Conclusions and Discussion**
+
+* The data indicates a significant increase in confirmed COVID-19 cases in Slovakia ,particularly peaking in early 2022.This means virus was spreading rapidly at that time.
+There was a noticeable rise in death cases starting from 2021 to 2022.This increase might be due to some limitations in the health facilities.Romania has the greatest death rate, which raises important questions about how the healthcare system should respond.Slovakia continues to have the lowest scores across the board, which may point to more effective containment or a less severe effect than other countries.Early in 2022, the COVID-19 pandemic had a significant effect in Slovakia.
+
+
+## **4. References**
+
+* https://en.wikipedia.org/wiki/Slovakia
+* https://worldpopulationreview.com/countries/slovakia-population
+
+
